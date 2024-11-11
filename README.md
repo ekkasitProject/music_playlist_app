@@ -98,18 +98,24 @@ assets:
 ## การติดตั้งและรัน
 
 1. ติดตั้ง Dependencies:
+```bash
 flutter pub get
+```
+
 2. รันแอพ:
+```bash
 flutter run
+```
 
 ## Dependencies ที่ใช้
 
+```yaml
 dependencies:
-    flutter:
-        sdk: flutter
-    provider: ^6.0.0        # State Management
-    audioplayers: ^5.2.1    # เล่นไฟล์เสียง
-    shimmer: ^3.0.0         # จัดแต่ง Loading
+  flutter:
+    sdk: flutter
+  provider: ^6.0.0        # State Management
+  audioplayers: ^5.2.1    # เล่นไฟล์เสียง
+```
 
 ## Future Improvements
 
@@ -117,3 +123,9 @@ dependencies:
 2. เพิ่มการแชร์เพลย์ลิสต์
 3. เพิ่มการดาวน์โหลดเพลง
 4. เพิ่มการแสดงเนื้อเพลง
+
+
+
+
+
+
