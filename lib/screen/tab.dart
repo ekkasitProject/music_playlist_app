@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:music_playlist_app/models/song.dart';
+import 'package:music_playlist_app/models/music.dart';
 import 'package:music_playlist_app/screen/home.dart';
 import 'package:music_playlist_app/screen/play.dart';
 import 'package:music_playlist_app/screen/play_list.dart';
 
 class TabScreen extends StatefulWidget {
   final int? currentTab;
-  final SongModel? song;
+  final MusicModel? song;
 
   const TabScreen({
     super.key,

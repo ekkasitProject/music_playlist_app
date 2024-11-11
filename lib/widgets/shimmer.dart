@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -11,6 +10,7 @@ class ShimmerLoading extends StatelessWidget {
       baseColor: Colors.grey[800]!,
       highlightColor: Colors.grey[700]!,
       child: ListView.builder(
+        padding: EdgeInsets.zero,
         itemCount: 6,
         itemBuilder: (context, index) {
           return _buildShimmerItem();

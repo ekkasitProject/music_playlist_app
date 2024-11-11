@@ -4,11 +4,11 @@ import 'package:music_playlist_app/models/playlist.dart';
 import 'package:music_playlist_app/provider/playlist_provider.dart';
 import 'package:music_playlist_app/screen/tab.dart';
 import 'package:provider/provider.dart';
-import '../provider/song_provider.dart';
-import '../models/song.dart';
+import '../provider/music_provider.dart';
+import '../models/music.dart';
 
 class PlayScreen extends StatelessWidget {
-  final SongModel? song;
+  final MusicModel? song;
   const PlayScreen({super.key, this.song});
 
   @override
@@ -103,7 +103,7 @@ class PlayScreen extends StatelessWidget {
 
                     // Controls placeholder
                     Container(
-                      height: 200,
+                      height: 150,
                       alignment: Alignment.center,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -217,30 +217,28 @@ class PlayScreen extends StatelessWidget {
                   ),
 
                   // Album Cover
-                  Expanded(
-                    flex: 5,
-                    child: Center(
-                      child: Container(
-                        width: double.infinity,
-                        height: double.infinity,
-                        margin: const EdgeInsets.symmetric(
-                          vertical: 32,
-                          horizontal: 24,
+                  Container(
+                    width: 220,
+                    height: 220,
+                    margin: const EdgeInsets.symmetric(
+                      vertical: 32,
+                      horizontal: 24,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue.withOpacity(0.3),
+                          blurRadius: 30,
+                          offset: const Offset(0, 10),
                         ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.blue.withOpacity(0.3),
-                              blurRadius: 30,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                          image: DecorationImage(
-                            image: NetworkImage(currentSong.albumCover),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(30),
+                      child: Image.asset(
+                        currentSong.albumCover,
+                        fit: BoxFit.cover,
                       ),
                     ),
                   ),
@@ -418,7 +416,7 @@ class PlayScreen extends StatelessWidget {
   }
 }
 
-void _handlePlaylistAction(BuildContext context, SongModel currentSong,
+void _handlePlaylistAction(BuildContext context, MusicModel currentSong,
     bool isInPlaylist, PlaylistProvider provider) {
   if (currentSong != null) {
     if (isInPlaylist) {

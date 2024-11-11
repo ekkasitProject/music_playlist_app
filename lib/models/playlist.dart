@@ -1,9 +1,9 @@
-import 'package:music_playlist_app/models/song.dart';
+import 'package:music_playlist_app/models/music.dart';
 
 class PlaylistModel {
   final String id;
   final String name;
-  final List<SongModel> songs;
+  final List<MusicModel> songs;
   final String? coverUrl;
 
   PlaylistModel({

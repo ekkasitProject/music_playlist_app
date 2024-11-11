@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:music_playlist_app/models/playlist.dart';
-import 'package:music_playlist_app/models/song.dart';
+import 'package:music_playlist_app/models/music.dart';
 
 class PlaylistProvider extends ChangeNotifier {
   List<PlaylistModel> playlists = [];
@@ -9,12 +9,12 @@ class PlaylistProvider extends ChangeNotifier {
     return playlists.any((playlist) => playlist.id == id);
   }
 
-  bool hasSongInAnyPlaylist(SongModel song) {
+  bool hasSongInAnyPlaylist(MusicModel song) {
     return playlists
         .any((playlist) => playlist.songs.any((s) => s.id == song.id));
   }
 
-  PlaylistModel? getPlaylistContainingSong(SongModel song) {
+  PlaylistModel? getPlaylistContainingSong(MusicModel song) {
     try {
       return playlists.firstWhere(
         (playlist) => playlist.songs.any((s) => s.id == song.id),
@@ -32,7 +32,7 @@ class PlaylistProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addSongToPlaylist(PlaylistModel playlist, SongModel song) {
+  void addSongToPlaylist(PlaylistModel playlist, MusicModel song) {
     final index = playlists.indexWhere((p) => p.id == playlist.id);
     if (index == -1) return;
 
@@ -44,7 +44,6 @@ class PlaylistProvider extends ChangeNotifier {
       id: playlist.id,
       name: playlist.name,
       songs: [...playlist.songs, song],
-      coverUrl: playlist.songs.isEmpty ? song.albumCover : playlist.coverUrl,
     );
     playlists[index] = updatedPlaylist;
     notifyListeners();

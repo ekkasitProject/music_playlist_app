@@ -1,15 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:music_playlist_app/models/song.dart';
+import 'package:music_playlist_app/models/playlist.dart';
+import 'package:music_playlist_app/models/music.dart';
 import 'package:provider/provider.dart';
 import '../provider/playlist_provider.dart';
-import '../provider/song_provider.dart';
+import '../provider/music_provider.dart';
 import './tab.dart';
 
 class PlayListScreen extends StatelessWidget {
   const PlayListScreen({super.key});
 
-  void _navigateToPlayScreen(BuildContext context, SongModel song) {
+  void _navigateToPlayScreen(BuildContext context, MusicModel song) {
     Navigator.pushReplacement(
       context,
       CupertinoPageRoute(
@@ -24,12 +25,11 @@ class PlayListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A071E),
+      backgroundColor: Colors.black,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
             const Padding(
               padding: EdgeInsets.only(left: 20, right: 20, top: 40),
               child: Text(
@@ -42,11 +42,9 @@ class PlayListScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Playlists
             Expanded(
-              child: Consumer<PlaylistProvider>(
-                builder: (context, playlistProvider, child) {
+              child: Consumer2<PlaylistProvider, MusicProvider>(
+                builder: (context, playlistProvider, musicProvider, child) {
                   if (playlistProvider.playlists.isEmpty) {
                     return Center(
                       child: Column(
@@ -75,31 +73,287 @@ class PlayListScreen extends StatelessWidget {
                     itemCount: playlistProvider.playlists.length,
                     itemBuilder: (context, index) {
                       final playlist = playlistProvider.playlists[index];
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: playlist.coverUrl != null
-                              ? NetworkImage(playlist.coverUrl!)
-                              : null,
-                          backgroundColor: Colors.grey[300],
-                        ),
-                        title: Text(
-                          playlist.name,
-                          style: const TextStyle(
+                      final firstSong = playlist.songs.first;
+                      final isPlaying =
+                          musicProvider.currentSong?.id == firstSong.id &&
+                              musicProvider.isPlaying;
+
+                      return Dismissible(
+                        key: Key(playlist.id),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 20.0),
+                          color: Colors.red,
+                          child: const Icon(
+                            Icons.delete,
                             color: Colors.white,
-                            fontSize: 18,
                           ),
                         ),
-                        subtitle: Text(
-                          '${playlist.name} songs',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
-                            fontSize: 14,
-                          ),
-                        ),
-                        onTap: () {
-                          // Navigate to playlist details screen
-                          // You can implement the navigation logic here
+                        onDismissed: (direction) {
+                          playlistProvider.removePlaylist(playlist.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Removed "${firstSong.title}"',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              backgroundColor: Colors.red,
+                              behavior: SnackBarBehavior.floating,
+                              margin: const EdgeInsets.all(16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          );
                         },
+                        child: GestureDetector(
+                          onTap: () => _navigateToPlayScreen(
+                            context,
+                            firstSong,
+                          ),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            child: Row(
+                              children: [
+                                // Album Cover with Playing Overlay
+                                Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Container(
+                                      width: 60,
+                                      height: 60,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        image: DecorationImage(
+                                          image:
+                                              AssetImage(firstSong.albumCover),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                    if (isPlaying)
+                                      Container(
+                                        width: 60,
+                                        height: 60,
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.5),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: const Icon(
+                                          Icons.pause,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                Expanded(
+                                  child: Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 15,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          firstSong.title,
+                                          style: const TextStyle(
+                                            color: Color(0xFFF2F2F2),
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          firstSong.artist,
+                                          style: const TextStyle(
+                                            color: Color(0xFF8E8E8E),
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                // More Options
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.more_vert,
+                                    color: Color(0xFF8E8E8E),
+                                  ),
+                                  onPressed: () {
+                                    final playlistProvider =
+                                        Provider.of<PlaylistProvider>(
+                                      context,
+                                      listen: false,
+                                    );
+                                    final bool isInPlaylist = playlistProvider
+                                        .hasSongInAnyPlaylist(firstSong);
+
+                                    showModalBottomSheet(
+                                      context: context,
+                                      backgroundColor: const Color(0xFF1E1E1E),
+                                      builder: (context) => Container(
+                                        padding: const EdgeInsets.all(16),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            ListTile(
+                                              leading: Icon(
+                                                isInPlaylist
+                                                    ? Icons.playlist_remove
+                                                    : Icons.playlist_add,
+                                                color: Colors.white,
+                                              ),
+                                              title: Text(
+                                                isInPlaylist
+                                                    ? 'Remove from Playlist'
+                                                    : 'Add to Playlist',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              onTap: () {
+                                                Navigator.pop(context);
+                                                if (isInPlaylist) {
+                                                  // ลบเพลงจาก playlist
+                                                  final playlistToRemove =
+                                                      playlistProvider
+                                                          .getPlaylistContainingSong(
+                                                              firstSong);
+                                                  if (playlistToRemove !=
+                                                      null) {
+                                                    playlistProvider
+                                                        .removePlaylist(
+                                                            playlistToRemove
+                                                                .id);
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          'Removed "${firstSong.title}" from playlist',
+                                                          style:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .white),
+                                                        ),
+                                                        backgroundColor:
+                                                            Colors.red,
+                                                        behavior:
+                                                            SnackBarBehavior
+                                                                .floating,
+                                                        margin: const EdgeInsets
+                                                            .all(16),
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(8),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }
+                                                } else {
+                                                  // เพิ่มเพลงใหม่ลง playlist
+                                                  try {
+                                                    playlistProvider
+                                                        .createPlaylist(
+                                                            PlaylistModel(
+                                                      id: firstSong.id
+                                                          .toString(),
+                                                      name: firstSong.title,
+                                                      songs: [firstSong],
+                                                      coverUrl:
+                                                          firstSong.albumCover,
+                                                    ));
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          'Added "${firstSong.title}" to playlist',
+                                                          style:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .white),
+                                                        ),
+                                                        backgroundColor:
+                                                            const Color(
+                                                                0xFF6156E2),
+                                                        behavior:
+                                                            SnackBarBehavior
+                                                                .floating,
+                                                        margin: const EdgeInsets
+                                                            .all(16),
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(8),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  } catch (e) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          e.toString(),
+                                                          style:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .white),
+                                                        ),
+                                                        backgroundColor:
+                                                            Colors.red,
+                                                        behavior:
+                                                            SnackBarBehavior
+                                                                .floating,
+                                                        margin: const EdgeInsets
+                                                            .all(16),
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(8),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }
+                                                }
+                                              },
+                                            ),
+                                            const ListTile(
+                                              leading: Icon(
+                                                Icons.share,
+                                                color: Colors.white,
+                                              ),
+                                              title: Text(
+                                                'Share',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              // onTap: () {
+                                              //   Navigator.pop(context);
+                                              // },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
+                                // Play/Pause Button
+                              ],
+                            ),
+                          ),
+                        ),
                       );
                     },
                   );
